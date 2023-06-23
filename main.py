@@ -112,6 +112,25 @@ if display:
     data_display.flash_message("Waiting for GPS Fix")
     data_display.set_test_totals(TEST_TOTALS)
 
+def shutdown(arg):
+    print("Shutting down:", arg)
+    try:
+        axp
+    except NameError:
+        print("AXP Not Avaliable, probably a TTGO < 1, can't shutdown")
+        return False
+    if display:
+        data_display.flash_message("Shutting Down")
+        data_display.display.displayOff()
+    if led is not None:
+        if led is not None and led is not "AXP":
+            led.value(0)
+        elif led == "AXP":
+            axp.setChgLEDMode(axp202.AXP20X_LED_OFF)
+    axp.shutdown()
+
+shutdown_button = Pin(config.DEVICE_CONFIG[lora_mac]['SHUTDOWN_PIN'], Pin.IN, Pin.PULL_UP)
+shutdown_button.callback(Pin.IRQ_FALLING, shutdown)
 
 while True:
     frame_counter = 0
@@ -140,6 +159,14 @@ while True:
         if gps_fix is True:
             if display:
                 data_display.flash_message("Lost GPS Fix!")
+                data_display.set_loc({"latitude": 0,
+                        "longitude": 0,
+                        "altitude": 0,
+                        "speed": 0,
+                        "hdop": 99,
+                        "satellites_in_use": 0,
+                        "satellites_in_view": gps.gps_dev.satellites_in_view,
+                        })
             print("Lost GPS Fix!")
             gps_fix = False
 
@@ -208,6 +235,15 @@ while True:
             #gps_array, timestamp, valid = gps.get_loc()
             #print("Done")
     if not valid:
+        if display:
+            data_display.set_loc({"latitude": 0,
+                    "longitude": 0,
+                    "altitude": 0,
+                    "speed": 0,
+                    "hdop": 99,
+                    "satellites_in_use": 0,
+                    "satellites_in_view": gps.gps_dev.satellites_in_view,
+                    })        
         if led is not None and led is not "AXP":
             led.value(1)
         elif led == "AXP":
