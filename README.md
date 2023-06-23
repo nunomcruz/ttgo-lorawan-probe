@@ -43,7 +43,7 @@ function decodeUplink(input) {
 2. Create a device in your app
 3. Configure the device to use OTAA or ABP, ABP is better for testing range
 4. Configure an integration to store your received data together with network metrics (rssi and snr)
-5. Configure settings con lib/config.py, including your newly created device at TTN
+5. Configure settings in lib/config.py, including your newly created device at TTN
 6. Push everything to the TTGO
 7. Wait for the messages to arrive at TTN
 8. Check the data in your integration and push it to TTN Mapper
