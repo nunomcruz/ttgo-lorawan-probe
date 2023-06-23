@@ -96,7 +96,7 @@ class DATA_display:
                 self.display.addString(0, 4, "Test Count:    {:2d}/{:2d}".format(self.test_count,self.test_totals))
                 self.display.addString(0, 5, "Coords: {:6.3f},{:6.3f}".format(self.latitude,self.longitude))
                 self.display.addString(0, 6, "Sats: {:2d}/{:2d} DOP: {:2.2f}".format(self.satellites_in_use,self.satellites_in_view,self.hdop))
-                self.display.addString(0, 7, "Speed: {:3d} km/h".format(self.speed))
+                self.display.addString(0, 7, "Speed: {:3d} Km/h".format(self.speed))
                 #self.display.command(self.display.OLED_DEACTIVATE_SCROLL)
                 self.display.drawBuffer()
                 #self.display.command(self.display.OLED_ACTIVATE_SCROLL)
