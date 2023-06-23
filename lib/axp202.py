@@ -74,8 +74,18 @@ class PMU(object):
         self.bus.writeto_mem(self.address, reg, self.bytebuf)
 
     def read_byte(self, reg):
-        self.bus.readfrom_mem_into(self.address, reg, self.bytebuf)
-        return self.bytebuf[0]
+        try:
+            self.bus.readfrom_mem_into(self.address, reg, self.bytebuf)
+            return self.bytebuf[0]
+        except Exception as err:
+            print("AXP I2C Error, retrying once: ", err)
+            try:
+                self.bus.readfrom_mem_into(self.address, reg, self.bytebuf)
+                return self.bytebuf[0]
+            except Exception as err2:
+                print("AXP I2C Error: ", err2)
+                return None
+
 
     def read_word(self, reg):
         self.bus.readfrom_mem_into(self.address, reg, self.wordbuf)
@@ -301,8 +311,8 @@ class PMU(object):
     def setDC2Voltage(self, mv):
         if(mv < 700):
             mv = 700
-        elif(mv > 3500):
-            mv = 3500
+        elif(mv > 2275):
+            mv = 2275
         val = (mv - 700) / 25
         self.write_byte(AXP202_DC2OUT_VOL, int(val))
 
@@ -351,10 +361,11 @@ class PMU(object):
             self.write_byte(AXP192_LDO23OUT_VOL, int(prev))
 
     def setLDO4Voltage(self, arg):
-        data = self.read_byte(AXP202_LDO24OUT_VOL)
-        data = data & 0xF0
-        data = data | arg
-        self.write_byte(AXP202_LDO24OUT_VOL, data)
+        if self.chip == AXP202_CHIP_ID and arg <= AXP202_LDO4_3300MV:
+            data = self.read_byte(AXP202_LDO24OUT_VOL)
+            data = data & 0xF0
+            data = data | arg
+            self.write_byte(AXP202_LDO24OUT_VOL, data)
 
     def setLDO3Mode(self, mode):
         if(mode > AXP202_LDO3_DCIN_MODE):
@@ -462,16 +473,17 @@ class PMU(object):
 
     def setChgLEDMode(self, mode):
         data = self.read_byte(AXP202_OFF_CTL)
-        data |= self.__BIT_MASK(3)
-        if(mode == AXP20X_LED_OFF):
-            data = data & 0b11001111
-        elif(mode == AXP20X_LED_BLINK_1HZ):
-            data = data & 0b11001111
-            data = data | 0b00010000
-        elif(mode == AXP20X_LED_BLINK_4HZ):
-            data = data & 0b11001111
-            data = data | 0b00100000
-        elif(mode == AXP20X_LED_LOW_LEVEL):
-            data = data & 0b11001111
-            data = data | 0b00110000
-        self.write_byte(AXP202_OFF_CTL, data)
+        if data is not None:
+            data |= self.__BIT_MASK(3)
+            if(mode == AXP20X_LED_OFF):
+                data = data & 0b11001111
+            elif(mode == AXP20X_LED_BLINK_1HZ):
+                data = data & 0b11001111
+                data = data | 0b00010000
+            elif(mode == AXP20X_LED_BLINK_4HZ):
+                data = data & 0b11001111
+                data = data | 0b00100000
+            elif(mode == AXP20X_LED_LOW_LEVEL):
+                data = data & 0b11001111
+                data = data | 0b00110000
+            self.write_byte(AXP202_OFF_CTL, data)

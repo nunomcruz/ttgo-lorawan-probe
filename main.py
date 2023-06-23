@@ -80,14 +80,19 @@ sock.setsockopt(socket.SOL_LORA, socket.SO_DR, 0)
 sock.setblocking(True)
 sock.bind(1)
 
-led = Pin(config.DEVICE_CONFIG[lora_mac]['LED_PIN'], Pin.OUT)
+if config.DEVICE_CONFIG[lora_mac]['LED_PIN'] is not None and config.DEVICE_CONFIG[lora_mac]['LED_PIN'] is not "AXP":
+    led = Pin(config.DEVICE_CONFIG[lora_mac]['LED_PIN'], Pin.OUT)
+elif config.DEVICE_CONFIG[lora_mac]['LED_PIN'] is "AXP":
+    led = config.DEVICE_CONFIG[lora_mac]['LED_PIN']
+else:
+    led = None
 
 gps = gps_data.GPS_data(config.DEVICE_CONFIG[lora_mac]['GPS_UART_PINS'])
 
 i2c = I2C(1, pins=config.DEVICE_CONFIG[lora_mac]['I2C_PINS'])
 
 try:
-    data_display = DATA_display(i2c)
+    data_display = DATA_display(i2c, config.DEVICE_CONFIG[lora_mac]['ROTATE_DISPLAY'])
     data_display.flash_message("Booting...")
     data_display.refresh()
     display = True
@@ -117,15 +122,22 @@ while True:
     #gps_array = [183, 30, 144, 121, 132, 122, 0, 98, 61, 5]
 
     if gps.has_fix():
-        if gps_fix == False:
+        if gps_fix is False:
             if display:
                 data_display.flash_message("Got GPS Fix!")
-                data_display.set_loc({"latitude":gps.gps_dev.latitude[0], "longitude":gps.gps_dev.longitude[0]})
+                data_display.set_loc({"latitude":gps.gps_dev.latitude[0],
+                                        "longitude":gps.gps_dev.longitude[0],
+                                        "altitude":gps.gps_dev.altitude,
+                                        "speed":gps.gps_dev.speed[2],
+                                        "hdop":gps.gps_dev.hdop,
+                                        "satellites_in_use":gps.gps_dev.satellites_in_use,
+                                        "satellites_in_view":gps.gps_dev.satellites_in_view,
+                                      })
             print("Got GPS Fix!")
             gps_fix = True
                 #data_display.set_timestamp(gps.gps_dev.date_string())
     else:
-        if gps_fix == True:
+        if gps_fix is True:
             if display:
                 data_display.flash_message("Lost GPS Fix!")
             print("Lost GPS Fix!")
@@ -154,10 +166,20 @@ while True:
                     data_display.set_msg_count(test)
                     data_display.set_test_count(frame_counter)
                     data_display.set_time(gps.gps_dev.timestamp)
-                    data_display.set_loc({"latitude":gps.gps_dev.latitude[0], "longitude":gps.gps_dev.longitude[0]})
+                    data_display.set_loc({"latitude":gps.gps_dev.latitude[0],
+                                        "longitude":gps.gps_dev.longitude[0],
+                                        "altitude":gps.gps_dev.altitude,
+                                        "speed":gps.gps_dev.speed[2],
+                                        "hdop":gps.gps_dev.hdop,
+                                        "satellites_in_use":gps.gps_dev.satellites_in_use,
+                                        "satellites_in_view":gps.gps_dev.satellites_in_view,
+                                      })
                 print("Test#: {}/{}".format(test+1,config.DEVICE_CONFIG[lora_mac]['TEST_MSG_SENDS']))
                 print("Test Totals: {}/{}".format(frame_counter+1,TEST_TOTALS))
-                led.value(1)
+                if led is not None and led is not "AXP":
+                    led.value(1)
+                elif led == "AXP":
+                    axp.setChgLEDMode(axp202.AXP20X_LED_LOW_LEVEL)
                 print("Sending payload: {}".format(gps_array))
                 if display:
                     data_display.flash_message("Sending LoRa Packet")
@@ -172,7 +194,10 @@ while True:
                         data_display.flash_message("LoRa Send Error")
                         time.sleep(10)
                         machine.reset()
-                led.value(0)
+                if led is not None and led is not "AXP":
+                    led.value(0)
+                elif led == "AXP":
+                    axp.setChgLEDMode(axp202.AXP20X_LED_OFF)
                 frame_counter+=1
                 print("Waiting for Next Round")
                 if display:
@@ -183,9 +208,15 @@ while True:
             #gps_array, timestamp, valid = gps.get_loc()
             #print("Done")
     if not valid:
-        led.value(1)
+        if led is not None and led is not "AXP":
+            led.value(1)
+        elif led == "AXP":
+            axp.setChgLEDMode(axp202.AXP20X_LED_LOW_LEVEL)
         time.sleep(0.1)
-        led.value(0)
+        if led is not None and led is not "AXP":
+            led.value(0)
+        elif led == "AXP":
+            axp.setChgLEDMode(axp202.AXP20X_LED_OFF)
         time.sleep(0.1)
     #GPS Sleep
     if display:

@@ -240,7 +240,7 @@ class lopylcd:
 
         return self.DISPLAY_TYPE_SH1106 if vote_1106 > vote_1306 else self.DISPLAY_TYPE_SSD1306
 
-    def __init__(self, i2c):
+    def __init__(self, i2c, rotate=False):
         # 128x64 I2C OLED Display
         self.width = 0x80
         self.height = 0x40
@@ -263,9 +263,9 @@ class lopylcd:
             self.command(self.OLED_PAGEADDR,  0,  self.pages-1)
             self.command(self.OLED_SEGREMAP)
             self.command(self.OLED_COMSCANINC)
-            #uncomment to rotate
-            self.command(self.OLED_SEGREMAP | 0x1)
-            self.command(self.OLED_COMSCANDEC)
+            if not rotate:
+                self.command(self.OLED_SEGREMAP | 0x1)
+                self.command(self.OLED_COMSCANDEC)
             self.command(self.OLED_SETCOMPINS,  0x12)
             self.command(self.OLED_SETCONTRAST,  0xCF)
             self.command(self.OLED_SETPRECHARGE,  0xF1)

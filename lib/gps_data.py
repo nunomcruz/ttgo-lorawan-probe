@@ -13,10 +13,19 @@ class GPS_data():
 
     def __init__(self,uart_pins):
         self.uart = UART(1, 9600, pins=uart_pins)
+        time.sleep(0.5)
         self.gps_dev = MicropyGPS(location_formatting='dd')
         # Bug correction for TTGO V1.1 GPS - https://github.com/nunomcruz/ttgo-tbeam-gps-reset-python
         if not self.uart.any():
+            if config.DEBUG:
+                print("Fixing GPS issue not receiving data")
             self.uart.write(b'\xb5b\x06\x00\x14\x00\x01\x00\x00\x00\xd0\x08\x00\x00\x80%\x00\x00\x07\x00\x03\x00\x00\x00\x00\x00\xa2\xb5') # Set GPS to 9600 baud
+            time.sleep(1.5)
+            if self.uart.any():
+                if config.DEBUG:
+                    print("GPS issue fixed")
+            else:
+                raise Exception("GPS issue not fixed")
 
     def convert_payload(self, lat, lon, alt, hdop, sats):
         """
@@ -78,20 +87,6 @@ class GPS_data():
             if self.gps_dev.longitude[1] == 'W':
                 longitude=longitude*-1
             coords = self.convert_payload(latitude, longitude, self.gps_dev.altitude, self.gps_dev.hdop, self.gps_dev.satellites_in_use)
-                    #lat = int((self.gps_dev.latitude[0] + (self.gps_dev.latitude[1]/60) + 90)*10000)
-                    #lon = int((self.gps_dev.longitude[0] + (self.gps_dev.longitude[1]/60) + 180)*10000)
-                    #alt = int((self.gps_dev.altitude) * 10)
-                    #lhdop = int((self.gps_dev.hdop) * 10)
-                    # encode location data
-                    #coords[0] = lat
-                    #coords[1] = (lat >> 8)
-                    #coords[2] = (lat >> 16)
-                    #coords[3] = lon
-                    #coords[4] = (lon >> 8)
-                    #coords[5] = (lon >> 16)
-                    #coords[6] = alt
-                    #coords[7] = (alt >> 8)
-                    #coords[8] = lhdop
         return coords, timestamp, valid
 
     def has_fix(self):

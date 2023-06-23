@@ -31,6 +31,7 @@ DEVICE_CONFIG = {
         "I2C_PINS" : ('G13', 'G2'), # For Display
         # Alternative I2C Pins, if mounted upside down
         # I2C_PINS=('G21','G22')
+        "DISPLAY_ROTATE": True,
     },
     "lora mac addr 2": {   # Device 2
         "DEV_ADDR": "yourdevaddrhere",
@@ -41,11 +42,11 @@ DEVICE_CONFIG = {
         # Tested datarates 0=SF12, 1=SF11, 2=SF10, 3=SF9, 4=SF8, 5=SF7
         # TEST_DATARATES=(0,1,2,3,4,5)
         "TEST_DATARATES": (0, 3, 5),
-        "LED_PIN" : 'G14',
+        # Example for using the AXP led if no other is available
+        "LED_PIN" : 'AXP',
         "TEST_MSG_SENDS" : 1, # number of tests per message size
         "I2C_PINS" : ('G13', 'G2'),  # For Display
         # Alternative I2C Pins, if mounted upside down
         # I2C_PINS=('G21','G22')
     }
 }
-

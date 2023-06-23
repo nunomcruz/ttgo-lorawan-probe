@@ -32,6 +32,10 @@ class DATA_display:
     hour = 0
     minute = 0
     second = 0
+    satellites_in_use = 0
+    satellites_in_view = 0
+    hdop = 0
+    speed = 0
 
 
     def _th_refresh(self):
@@ -40,9 +44,9 @@ class DATA_display:
             self.refresh()
             time.sleep(5)
 
-    def __init__(self, i2c):
+    def __init__(self, i2c, rotate=False):
         self.refresh_lock = _thread.allocate_lock()
-        self.display = lopylcd.lopylcd(i2c)
+        self.display = lopylcd.lopylcd(i2c, rotate)
         self.display.set_contrast(255)
         self.display.displayOn()
         self.refresh_all(self.dr, self.dr_totals, self.msg_size, self.msg_count, self.msg_totals, self.test_count, self.test_totals, self.payload, self.payload_totals, self.latitude, self.longitude, self.hour, self.minute, self.second)
@@ -69,8 +73,8 @@ class DATA_display:
     def refresh(self):
         if self.display.isConnected():
             with self.refresh_lock:
-                #self.display.command(self.display.SSD1306_LEFT_HORIZONTAL_SCROLL)
-                #self.display.command(self.display.SSD1306_LEFT_HORIZONTAL_SCROLL)
+                #self.display.command(self.display.OLED_LEFT_HORIZONTAL_SCROLL)
+                #self.display.command(self.display.OLED_LEFT_HORIZONTAL_SCROLL)
                 self.display.command(0x00)
                 self.display.command(0x00) #start
                 self.display.command(0X00)
@@ -88,12 +92,14 @@ class DATA_display:
                 self.display.addString(0, 2, "Time:    {:02d}:{:02d}:{:06.3f}".format(self.hour,self.minute,self.second))
                 #self.display.addString(0, 3, "Payload#:       {:2d}/{:2d}".format(self.payload,self.payload_totals))
                 #self.display.addString(0, 4, "Payload Size:    {:2d} B".format(self.msg_size))
-                self.display.addString(0, 5, "DR: {:2d} Totals {:2d}".format(self.dr,self.dr_totals))
-                self.display.addString(0, 6, "Test Count:    {:2d}/{:2d}".format(self.test_count,self.test_totals))
-                self.display.addString(0, 7, "Coords: {:6.3f},{:6.3f}".format(self.latitude,self.longitude))
-                #self.display.command(self.display.SSD1306_DEACTIVATE_SCROLL)
+                self.display.addString(0, 3, "DR: {:2d} Totals {:2d}".format(self.dr,self.dr_totals))
+                self.display.addString(0, 4, "Test Count:    {:2d}/{:2d}".format(self.test_count,self.test_totals))
+                self.display.addString(0, 5, "Coords: {:6.3f},{:6.3f}".format(self.latitude,self.longitude))
+                self.display.addString(0, 6, "Sats: {:2d}/{:2d} DOP: {:2.2f}".format(self.satellites_in_use,self.satellites_in_view,self.hdop))
+                self.display.addString(0, 7, "Speed: {:3d} km/h".format(self.speed))
+                #self.display.command(self.display.OLED_DEACTIVATE_SCROLL)
                 self.display.drawBuffer()
-                #self.display.command(self.display.SSD1306_ACTIVATE_SCROLL)
+                #self.display.command(self.display.OLED_ACTIVATE_SCROLL)
 
         else:
             print("Error: LCD not found")
@@ -115,13 +121,15 @@ class DATA_display:
         self.hour = time[0]
         self.minute = time[1]
         self.second = time[2]
-        #self.display.addString(0, 2, "Time:    {:02d}:{:02d}:{:06.3f}".format(self.hour,self.minute,self.second))
-        #self.display.drawBuffer()
         self.refresh()
 
     def set_loc(self, loc):
         self.latitude = float(loc["latitude"])
         self.longitude = float(loc["longitude"])
+        self.satellites_in_use = loc["satellites_in_use"]
+        self.satellites_in_view = loc["satellites_in_view"]
+        self.hdop = float(loc["hdop"])
+        self.speed = int(loc["speed"])
         self.refresh()
 
     def set_msg_size(self,msg_size):
