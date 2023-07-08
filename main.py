@@ -215,6 +215,17 @@ while True:
                     if display:
                         data_display.flash_message("LoRa Packet Sent")
                     print("LoRa Packet Sent")
+                    sock.setblocking(False)
+                    time.sleep(2)
+                    data = sock.recv(64)
+                    sock.setblocking(True)
+                    if len(data) != 0:
+                        print("Received: {}".format(data))
+                        if display:
+                            data_display.flash_message("Received Update")
+                        data_display.set_distance(data[0])
+                        data_display.set_gateway(str(data[1:],'utf-8'))
+
                 except Exception as err:
                     print("LoRa Send Error: ", err)
                     if display:

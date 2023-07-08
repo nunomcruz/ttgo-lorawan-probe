@@ -36,6 +36,8 @@ class DATA_display:
     satellites_in_view = 0
     hdop = 0
     speed = 0
+    distance = 0
+    gateway = ""
 
 
     def _th_refresh(self):
@@ -92,11 +94,17 @@ class DATA_display:
                 self.display.addString(0, 2, "Time:    {:02d}:{:02d}:{:06.3f}".format(self.hour,self.minute,self.second))
                 #self.display.addString(0, 3, "Payload#:       {:2d}/{:2d}".format(self.payload,self.payload_totals))
                 #self.display.addString(0, 4, "Payload Size:    {:2d} B".format(self.msg_size))
-                self.display.addString(0, 3, "DR: {:2d} Totals {:2d}".format(self.dr,self.dr_totals))
-                self.display.addString(0, 4, "Test Count:    {:2d}/{:2d}".format(self.test_count,self.test_totals))
-                self.display.addString(0, 5, "Coords: {:6.3f},{:6.3f}".format(self.latitude,self.longitude))
-                self.display.addString(0, 6, "Sats: {:2d}/{:2d} DOP: {:2.2f}".format(self.satellites_in_use,self.satellites_in_view,self.hdop))
-                self.display.addString(0, 7, "Speed: {:3d} Km/h".format(self.speed))
+                
+                #self.display.addString(0, 4, "Test Count:    {:2d}/{:2d}".format(self.test_count,self.test_totals))
+                if self.gateway == "":
+                    self.display.addString(0, 3, "{:^21}".format("- Wait for Gateway -"))
+                else:
+                    self.display.addString(0, 3, "{:^21}".format(self.gateway))
+                self.display.addString(0, 4, "Coords: {:6.3f},{:6.3f}".format(self.latitude,self.longitude))
+                self.display.addString(0, 5, "Sats: {:2d}/{:2d} DOP: {:2.2f}".format(self.satellites_in_use,self.satellites_in_view,self.hdop))
+                #self.display.addString(0, 7, "Speed: {:3d} Km/h".format(self.speed))
+                self.display.addString(0, 6, "Spd: {:3d}kmh Dst: {:2d}km".format(self.speed,self.distance))
+                self.display.addString(0, 7, "DR: {:2d}/{:2d} T: {:2d}/{:2d}".format(self.dr,self.dr_totals,self.test_count,self.test_totals))
                 #self.display.command(self.display.OLED_DEACTIVATE_SCROLL)
                 self.display.drawBuffer()
                 #self.display.command(self.display.OLED_ACTIVATE_SCROLL)
@@ -158,4 +166,12 @@ class DATA_display:
 
     def set_payload_totals(self,payload_totals):
         self.payload_totals = payload_totals
+        self.refresh()
+    
+    def set_gateway(self, gateway):
+        self.gateway = gateway
+        self.refresh()
+    
+    def set_distance(self, distance):
+        self.distance = distance
         self.refresh()
