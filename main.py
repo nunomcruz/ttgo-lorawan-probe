@@ -24,6 +24,7 @@ from data_display import DATA_display
 from network import LoRa, WLAN
 from machine import Timer, I2C, Pin
 import axp202
+from AXP2101 import *
 
 import gps_data
 
@@ -40,7 +41,23 @@ try:
     axp.enableADC(axp202.AXP202_ADC1, axp202.AXP202_BATT_CUR_ADC1)
     axp.setChgLEDChgControl()
 except Exception as err:
-    print("AXP Not Available, probably a TTGO < 1: ", err)
+    # Probably a TTGO < 1 or a TTGO >= 1.2
+    try:
+        I2CBUS = I2C(0, pins=('G21','G22'))
+        axp = AXP2101(I2CBUS)
+        axp.setALDO2Voltage(3300)   # T-Beam LORA VCC 3v3
+        axp.setALDO3Voltage(3300)   # T-Beam GPS  VDD 3v3
+        axp.enableALDO2() # Turn on LORA VCC
+        axp.enableALDO3() # Turn on GPS VDD
+        axp.enableTemperatureMeasure()
+        axp.enableBattDetection()
+        axp.enableVbusVoltageMeasure()
+        axp.enableBattVoltageMeasure()
+        axp.enableSystemVoltageMeasure()
+        axp.setChargingLedMode(AXP2101.XPOWERS_CHG_LED_CTRL_CHG)
+    except Exception as err:
+        print("AXP Not Available, probably a TTGO < 1: ", err)
+
 
 
 #gc.enable()
@@ -126,7 +143,10 @@ def shutdown(arg):
         if led is not None and led is not "AXP":
             led.value(0)
         elif led == "AXP":
-            axp.setChgLEDMode(axp202.AXP20X_LED_OFF)
+            try:
+                axp.setChgLEDMode(axp202.AXP20X_LED_OFF)
+            except Exception as err: # Not pretty, not bad either
+                axp.setChargingLedMode(AXP2101.XPOWERS_CHG_LED_CTRL_OFF)
     axp.shutdown()
 
 shutdown_button = Pin(config.DEVICE_CONFIG[lora_mac]['SHUTDOWN_PIN'], Pin.IN, Pin.PULL_UP)
@@ -206,7 +226,10 @@ while True:
                 if led is not None and led is not "AXP":
                     led.value(1)
                 elif led == "AXP":
-                    axp.setChgLEDMode(axp202.AXP20X_LED_LOW_LEVEL)
+                    try:
+                        axp.setChgLEDMode(axp202.AXP20X_LED_LOW_LEVEL)
+                    except Exception as err: # Not pretty, not bad either #2
+                        axp.setChargingLedMode(AXP2101.XPOWERS_CHG_LED_ON)
                 print("Sending payload: {}".format(gps_array))
                 if display:
                     data_display.flash_message("Sending LoRa Packet")
@@ -235,7 +258,10 @@ while True:
                 if led is not None and led is not "AXP":
                     led.value(0)
                 elif led == "AXP":
-                    axp.setChgLEDMode(axp202.AXP20X_LED_OFF)
+                    try:
+                        axp.setChgLEDMode(axp202.AXP20X_LED_OFF)
+                    except Exception as err: # Not pretty, not bad either #3
+                        axp.setChargingLedMode(AXP2101.XPOWERS_CHG_LED_OFF)
                 frame_counter+=1
                 print("Waiting for Next Round")
                 if display:
@@ -254,16 +280,22 @@ while True:
                     "hdop": 99,
                     "satellites_in_use": 0,
                     "satellites_in_view": gps.gps_dev.satellites_in_view,
-                    })        
+                    })
         if led is not None and led is not "AXP":
             led.value(1)
         elif led == "AXP":
-            axp.setChgLEDMode(axp202.AXP20X_LED_LOW_LEVEL)
+            try:
+                axp.setChgLEDMode(axp202.AXP20X_LED_LOW_LEVEL)
+            except Exception as err: # Not pretty, not bad either #4
+                axp.setChargingLedMode(AXP2101.XPOWERS_CHG_LED_ON)
         time.sleep(0.1)
         if led is not None and led is not "AXP":
             led.value(0)
         elif led == "AXP":
-            axp.setChgLEDMode(axp202.AXP20X_LED_OFF)
+            try:
+                axp.setChgLEDMode(axp202.AXP20X_LED_OFF)
+            except Exception as err: # Not pretty, not bad either #5
+                axp.setChargingLedMode(AXP2101.XPOWERS_CHG_LED_OFF)
         time.sleep(0.1)
     #GPS Sleep
     if display:
