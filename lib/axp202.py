@@ -34,15 +34,15 @@ from ustruct import unpack
 
 from constants import *
 
-default_pin_scl = 'G22'
-default_pin_sda = 'G21'
-default_pin_intr = 'G35'
+default_pin_scl = 22
+default_pin_sda = 21
+default_pin_intr = 35
 default_chip_type = AXP202_CHIP_ID
 
 
 class PMU(object):
     def __init__(self, scl=None, sda=None,
-                 intr=None, address=None):
+                 intr=None, address=None, i2c=None):
         self.device = None
         self.scl = scl if scl is not None else default_pin_scl
         self.sda = sda if sda is not None else default_pin_sda
@@ -55,13 +55,16 @@ class PMU(object):
         self.wordbuf = memoryview(self.buffer[0:2])
         self.irqbuf = memoryview(self.buffer[0:5])
 
-        self.init_pins()
-        self.init_i2c()
+        if i2c is not None:
+            self.bus = i2c
+        else:
+            self.init_pins()
+            self.init_i2c()
         self.init_device()
 
     def init_i2c(self):
         print('* initializing i2c')
-        self.bus = I2C(0, pins=(self.pin_sda,self.pin_scl))
+        self.bus = I2C(0, scl=self.pin_scl, sda=self.pin_sda)
 
     def init_pins(self):
         print('* initializing pins')
