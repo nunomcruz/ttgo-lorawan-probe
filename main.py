@@ -231,11 +231,17 @@ while True:
                             if display:
                                 data_display.flash_message("Received Update")
                                 data_display.set_distance(data[0])
-                                data_display.set_gateway(str(data[1:], 'utf-8'))
+                                try:
+                                    gateway = str(data[1:], 'utf-8')
+                                except Exception:
+                                    gateway = ""
+                                data_display.set_gateway(gateway)
                     lw.nvram_save()
                 except OSError as err:
                     if err.args[0] == errno.EBUSY:
                         wait_ms = lw.time_until_tx()
+                        if not wait_ms or wait_ms < 0:
+                            wait_ms = 0
                         print("Duty cycle restricted, waiting {} ms".format(wait_ms))
                         time.sleep_ms(wait_ms)
                     else:
