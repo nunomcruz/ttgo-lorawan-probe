@@ -31,7 +31,10 @@ DEVICE_CONFIG = {
         "I2C_PINS" : ('G13', 'G2'), # For Display
         # Alternative I2C Pins, if mounted upside down
         # I2C_PINS=('G21','G22')
-        "DISPLAY_ROTATE": True,
+        # Optional: power the display from an IO pin (displays with GND/VCC swapped)
+        # "POWER_DISPLAY": 'G2',
+        "ROTATE_DISPLAY": True,
+        "SHUTDOWN_PIN": 'G38',
     },
     "lora mac addr 2": {   # Device 2
         "DEV_ADDR": "yourdevaddrhere",
@@ -48,5 +51,9 @@ DEVICE_CONFIG = {
         "I2C_PINS" : ('G13', 'G2'),  # For Display
         # Alternative I2C Pins, if mounted upside down
         # I2C_PINS=('G21','G22')
+        # Optional: power the display from an IO pin (displays with GND/VCC swapped)
+        # "POWER_DISPLAY": 'G2',
+        "ROTATE_DISPLAY": True,
+        "SHUTDOWN_PIN": 'G38',
     }
 }

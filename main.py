@@ -49,6 +49,7 @@ except Exception as err:
         axp.setALDO3Voltage(3300)   # T-Beam GPS  VDD 3v3
         axp.enableALDO2() # Turn on LORA VCC
         axp.enableALDO3() # Turn on GPS VDD
+        axp.disableTSPinMeasure() # No battery thermistor on these boards; avoids bad readings / power cut
         axp.enableTemperatureMeasure()
         axp.enableBattDetection()
         axp.enableVbusVoltageMeasure()
@@ -106,7 +107,13 @@ else:
 
 gps = gps_data.GPS_data(config.DEVICE_CONFIG[lora_mac]['GPS_UART_PINS'])
 
-i2c = I2C(1, pins=config.DEVICE_CONFIG[lora_mac]['I2C_PINS'])
+try: # Some displays (GND/VCC swapped) need power from an IO pin
+    power_display = Pin(config.DEVICE_CONFIG[lora_mac]['POWER_DISPLAY'], Pin.OUT)
+    power_display.value(1)
+except Exception as err:
+    print("No power needed at IO pins for display: ", err)
+
+i2c = I2C(1, pins=config.DEVICE_CONFIG[lora_mac]['I2C_PINS'], baudrate=100000)
 
 try:
     data_display = DATA_display(i2c, config.DEVICE_CONFIG[lora_mac]['ROTATE_DISPLAY'])
