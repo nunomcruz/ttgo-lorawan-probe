@@ -2,7 +2,7 @@
 LoRaWAN Probe
 This is a simple LoRaWAN probe that sends multiple messages at different datarates to test the range of a LoRaWAN network.
 It uses the GPS to get a location and sends this in the message.
-Supports TTGO T-Beam with Pycom Firmware and OLED display.
+Supports TTGO T-Beam with a custom MicroPython firmware (fork at `~/Work/esp/micropython-lorawan/`) and OLED display.
 
 # Instructions
 1. Create your app at TTN, use the following sample as payload formatter:
@@ -49,3 +49,19 @@ function decodeUplink(input) {
 8. Check the data in your integration and push it to TTN Mapper
 9. Use the data to create a map of the range of your network
 10. Profit!
+
+## Verifying the migration
+
+This firmware runs only on-device. After flashing the custom MicroPython build
+and copying the files (`lib/` into the device `lib/`):
+
+1. Boot and watch the serial console: it prints the `tbeam.detect()` result and
+   the device id (`Device id: <hex>`). Add that id to `lib/config.py` with your
+   ABP credentials.
+2. Reboot. Confirm the PMU line matches your board (`axp192` / `axp2101`) and
+   that `nvram restored` or `provisioning ABP` is printed.
+3. Wait for a GPS fix — the OLED shows "Got GPS Fix!" and a position.
+4. Confirm uplinks arrive on TTN at DR0/DR3/DR5; the payload decodes with the
+   formatter above.
+5. Plot the device on TTN Mapper.
+6. Press the user button — the board powers off via the PMU.
