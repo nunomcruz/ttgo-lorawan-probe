@@ -11,8 +11,8 @@ import time
 
 class GPS_data():
 
-    def __init__(self,uart_pins):
-        self.uart = UART(1, 9600, pins=uart_pins)
+    def __init__(self, rx, tx):
+        self.uart = UART(1, baudrate=9600, rx=rx, tx=tx)
         time.sleep(0.5)
         self.gps_dev = MicropyGPS(location_formatting='dd')
         # Bug correction for TTGO V1.1 GPS - https://github.com/nunomcruz/ttgo-tbeam-gps-reset-python
