@@ -1,0 +1,9 @@
+# Real per-device config with credentials — never commit (use config.example.py)
+lib/config.py
+
+# Python bytecode (from host-side py_compile checks)
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store

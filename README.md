@@ -43,7 +43,8 @@ function decodeUplink(input) {
 2. Create a device in your app
 3. Configure the device to use OTAA or ABP, ABP is better for testing range
 4. Configure an integration to store your received data together with network metrics (rssi and snr)
-5. Configure settings in lib/config.py, including your newly created device at TTN
+5. Configure settings: copy `lib/config.example.py` to `lib/config.py` and add
+   your device. `lib/config.py` is gitignored so credentials never reach the repo
 6. Push everything to the TTGO
 7. Wait for the messages to arrive at TTN
 8. Check the data in your integration and push it to TTN Mapper
@@ -56,8 +57,9 @@ This firmware runs only on-device. After flashing the custom MicroPython build
 and copying the files (`lib/` into the device `lib/`):
 
 1. Boot and watch the serial console: it prints the `tbeam.detect()` result and
-   the device id (`Device id: <hex>`). Add that id to `lib/config.py` with your
-   ABP credentials.
+   the device id (`Device id: <hex>`). Copy `lib/config.example.py` to
+   `lib/config.py` and add that id with your ABP credentials. Pin overrides use
+   GPIO integers (e.g. `14`), not Pycom `'Gxx'` strings.
 2. Reboot. Confirm the PMU line matches your board (`axp192` / `axp2101`) and
    that `nvram restored` or `provisioning ABP` is printed.
 3. Wait for a GPS fix — the OLED shows "Got GPS Fix!" and a position.

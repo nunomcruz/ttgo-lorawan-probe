@@ -1,4 +1,7 @@
-# Per-device configuration for the LoRaWAN probe.
+# Per-device configuration for the LoRaWAN probe — TEMPLATE.
+#
+# Copy this file to lib/config.py and fill in real values.
+# lib/config.py is gitignored so credentials never reach the repo.
 #
 # DEVICE_CONFIG is keyed by the board's unique id:
 #   binascii.hexlify(machine.unique_id()).upper().decode()

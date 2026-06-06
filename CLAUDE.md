@@ -17,7 +17,7 @@ A LoRaWAN range-survey probe for the TTGO T-Beam running a custom **MicroPython 
 
 All per-device settings live in `lib/config.py` and are **keyed by the board's unique hardware id** (`DEVICE_CONFIG[device_id]`), where the key is `binascii.hexlify(machine.unique_id()).upper().decode()` — printed at boot as `Device id: <hex>`. Each physical board needs its own entry. Per-device keys: ABP credentials (`DEV_ADDR`, `APPS_KEY`, `NWS_KEY`), and optional GPIO integer overrides for `GPS_UART_PINS`, `I2C_PINS`, `LED_PIN`, `ROTATE_DISPLAY`, `SHUTDOWN_PIN`, and `POWER_DISPLAY`. When a pin override is absent, `tbeam.detect()` supplies the default.
 
-**Never commit real credentials.** The checked-in `config.py` contains placeholders (`"yourkeyhere"`). Keep them as placeholders in any committed change.
+**Never commit real credentials.** `lib/config.py` is **gitignored** — real per-device credentials live there only. The committed template is `lib/config.example.py` (placeholders `"yourkeyhere"`); keep it as placeholders in any committed change. Setup: copy `config.example.py` to `config.py` and fill in real values. `DEV_ADDR` is a hex string (no `0x`), pins are GPIO integers.
 
 ## Architecture
 
