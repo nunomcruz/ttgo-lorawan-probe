@@ -189,6 +189,10 @@ class lopylcd:
         self.command(self.OLED_DISPLAYOFF)
 
     def displayOn(self):
+        if self.displayType == self.DISPLAY_TYPE_SH1106:
+            # Re-enable the DC-DC that displayOff turns off, otherwise the panel
+            # stays dark after a reset (only a power cycle clears it).
+            self.command(self.OLED_SH1106_DCDC, self.OLED_SH1106_DCDC_ON)
         self.command(self.OLED_DISPLAYON)
 
     def clearBuffer(self):
@@ -284,5 +288,8 @@ class lopylcd:
             self.command(self.OLED_NORMALDISPLAY)
             self.command(self.OLED_DISPLAYON)
             self.displayType = self.detect_display_type()
+            # Now that the type is known, re-assert power-on so an SH1106 whose
+            # DC-DC was left off by a previous displayOff comes back after reset.
+            self.displayOn()
         else:
             print('Unable to find display at address ', self.OLED_I2C_ADDRESS)
