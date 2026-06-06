@@ -148,7 +148,7 @@ def shutdown(pin):
     print("Shutting down")
     if display:
         data_display.flash_message("Shutting Down")
-        data_display.display.displayOff()
+        data_display.power_off()
     set_led(False)
     if axp is not None:
         axp.shutdown()

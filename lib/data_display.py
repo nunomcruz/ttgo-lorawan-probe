@@ -112,6 +112,16 @@ class DATA_display:
         else:
             print("Error: LCD not found")
 
+    def power_off(self):
+        """Power the panel down, keeping whatever is currently shown. Used on
+        shutdown after a final message.
+
+        Skips the refresh lock on purpose: this runs from the shutdown IRQ and
+        must not block waiting on a refresh that may be in flight.
+        """
+        if self.display.isConnected():
+            self.display.displayOff()
+
     def flash_message(self, message):
         self.message = message
         self.flash_count = 2

@@ -51,6 +51,13 @@ class lopylcd:
     OLED_EXTERNALVCC = 0x1
     OLED_SWITCHCAPVCC = 0x2
 
+    # SH1106 internal DC-DC control (separate from the SSD1306 charge pump).
+    # Without turning it off, DISPLAYOFF alone leaves the panel biased and the
+    # last frame stays visible.
+    OLED_SH1106_DCDC = 0xAD
+    OLED_SH1106_DCDC_OFF = 0x8A
+    OLED_SH1106_DCDC_ON = 0x8B
+
     # Scrolling constants
     OLED_ACTIVATE_SCROLL = 0x2F
     OLED_DEACTIVATE_SCROLL = 0x2E
@@ -175,6 +182,10 @@ class lopylcd:
             self.command(self.OLED_SETCONTRAST,  contrast)
 
     def displayOff(self):
+        if self.displayType == self.DISPLAY_TYPE_SH1106:
+            # SH1106 keeps the panel lit after DISPLAYOFF unless the internal
+            # DC-DC is turned off as well.
+            self.command(self.OLED_SH1106_DCDC, self.OLED_SH1106_DCDC_OFF)
         self.command(self.OLED_DISPLAYOFF)
 
     def displayOn(self):
