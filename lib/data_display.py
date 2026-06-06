@@ -113,13 +113,17 @@ class DATA_display:
             print("Error: LCD not found")
 
     def power_off(self):
-        """Power the panel down, keeping whatever is currently shown. Used on
-        shutdown after a final message.
+        """Blank the panel and power it down. Used on shutdown.
+
+        DISPLAYOFF alone does not clear some SH1106 panels (they freeze on the
+        last frame), so draw an empty buffer before turning the display off.
 
         Skips the refresh lock on purpose: this runs from the shutdown IRQ and
         must not block waiting on a refresh that may be in flight.
         """
         if self.display.isConnected():
+            self.display.clearBuffer()
+            self.display.drawBuffer()
             self.display.displayOff()
 
     def flash_message(self, message):
