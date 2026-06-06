@@ -144,7 +144,23 @@ if display:
     data_display.set_test_totals(TEST_TOTALS)
 
 
-def shutdown(pin):
+shutdown_requested = False
+
+
+def request_shutdown(pin):
+    """IRQ handler: only flag the request.
+
+    The actual shutdown runs in the main loop. Doing it here is unreliable:
+    the OLED driver allocates on every command (and refresh formats strings),
+    which is not allowed inside a MicroPython interrupt handler. The OLED is
+    not powered by the PMU, so it must be turned off over I2C from a safe
+    context before the PMU cuts power to the rest of the board.
+    """
+    global shutdown_requested
+    shutdown_requested = True
+
+
+def do_shutdown():
     print("Shutting down")
     if display:
         data_display.flash_message("Shutting Down")
@@ -156,12 +172,25 @@ def shutdown(pin):
         print("No PMU - cannot power off")
 
 
+def sleep_or_shutdown(seconds):
+    """Sleep in short slices so a pending shutdown is acted on promptly."""
+    deadline = time.ticks_add(time.ticks_ms(), int(seconds * 1000))
+    while time.ticks_diff(deadline, time.ticks_ms()) > 0:
+        if shutdown_requested:
+            do_shutdown()
+            return
+        time.sleep_ms(50)
+
+
 shutdown_pin = cfg.get('SHUTDOWN_PIN', tbeam.BUTTON)
 shutdown_button = Pin(shutdown_pin, Pin.IN, Pin.PULL_UP)
-shutdown_button.irq(trigger=Pin.IRQ_FALLING, handler=shutdown)
+shutdown_button.irq(trigger=Pin.IRQ_FALLING, handler=request_shutdown)
 
 
 while True:
+    if shutdown_requested:
+        do_shutdown()
+
     frame_counter = 0
     gps_array, timestamp, valid = gps.get_loc()
 
@@ -198,6 +227,8 @@ while True:
                 data_display.set_dr(datarate)
             print("Datarate: {}/{}".format(datarate, len(cfg['TEST_DATARATES'])))
             for test in range(cfg['TEST_MSG_SENDS']):
+                if shutdown_requested:
+                    do_shutdown()
                 gps_array, timestamp, valid = gps.get_loc()
                 if not valid:
                     break
@@ -261,7 +292,7 @@ while True:
                 if display:
                     data_display.flash_message("Waiting for Next Round")
                     time.sleep(0.1)
-                time.sleep(config.TIME_BETWEEN_UPLINKS)
+                sleep_or_shutdown(config.TIME_BETWEEN_UPLINKS)
 
     if not valid:
         if display:
@@ -275,4 +306,4 @@ while True:
 
     if display:
         data_display.set_time(gps.gps_dev.timestamp)
-    time.sleep(config.GPS_READ_INTERVAL)
+    sleep_or_shutdown(config.GPS_READ_INTERVAL)
