@@ -169,7 +169,10 @@ def do_shutdown():
     if axp is not None:
         axp.shutdown()
     else:
-        print("No PMU - cannot power off")
+        # No PMU to cut power (TTGO v0.7). The display is already off, so drop
+        # the ESP32 into deep sleep; it stays here until the reset button.
+        print("No PMU - entering deep sleep")
+        machine.deepsleep()
 
 
 def sleep_or_shutdown(seconds):
